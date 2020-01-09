@@ -6,7 +6,7 @@ function handleError(commit, error) {
 }
 
 export default {
-  async login({ commit, state }, userId) {
+  async login({ commit }, userId) {
     try {
       commit("setError", "");
       commit("setLoading", true);
@@ -17,16 +17,18 @@ export default {
       });
       commit("setReconnect", false);
 
-      // save user rooms in store
       const rooms = currentUser.rooms.map(room => ({
         id: room.id,
         name: room.name
       }));
       commit("setRooms", rooms);
 
-      // subscribe user to room
-      const activeRoom = state.activeRoom || rooms[0];
-      commit("setActiveRoom", { id: activeRoom.id, name: activeRoom.name });
+      // Subscribe user to a room
+      const activeRoom = rooms[0]; // pick last used room, or the first one
+      commit("setActiveRoom", {
+        id: activeRoom.id,
+        name: activeRoom.name
+      });
       await chatkit.subscribetoRoom(activeRoom.id);
 
       return true;
@@ -34,6 +36,15 @@ export default {
       handleError(commit, error);
     } finally {
       commit("setLoading", false);
+    }
+  },
+  async changeRoom({ commit, state }, roomId) {
+    try {
+      await chatkit.subscribetoRoom(roomId);
+      const room = state.rooms.find(room => room.id === roomId);
+      commit("setActiveRoom", { id: room.id, name: room.name });
+    } catch (error) {
+      handleError(commit, error);
     }
   }
 };

@@ -20,7 +20,6 @@ async function connectUser(userId) {
 }
 
 async function setMembers() {
-  console.log("set members", activeRoom);
   const members = activeRoom.users.map(user => ({
     username: user.id,
     name: user.name,
@@ -36,7 +35,6 @@ async function subscribetoRoom(roomId) {
     messageLimit: MESSAGE_LIMIT,
     hooks: {
       onMessage: message => {
-        console.log(message);
         store.commit("addMessage", {
           text: message.text,
           name: message.sender.name,
